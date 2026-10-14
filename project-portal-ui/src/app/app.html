@@ -1,0 +1,429 @@
+
+<div class="portal">
+  <header class="navbar">
+    <div class="logo">
+      <img
+        src="/svm-logo.png"
+        alt="SVAM International"
+        class="company-logo"
+      />
+    </div>
+
+    <nav class="main-nav">
+      <a href="#" class="nav-link">
+        <span class="nav-icon">⌂</span>
+        <span>Home</span>
+      </a>
+
+      <a href="#projects" class="nav-link selected">
+        <span class="nav-icon">▦</span>
+        <span>Projects</span>
+        <span class="chevron">⌄</span>
+      </a>
+
+      <a href="#" class="nav-link">
+        <span class="nav-icon">♙</span>
+        <span>Allocation</span>
+        <span class="chevron">⌄</span>
+      </a>
+
+      <a href="#" class="nav-link">
+        <span class="nav-icon">▥</span>
+        <span>Reports</span>
+        <span class="chevron">⌄</span>
+      </a>
+
+      <a href="#" class="nav-link">
+        <span class="nav-icon">▤</span>
+        <span>Resource Management</span>
+      </a>
+
+      <a href="#" class="nav-link">
+        <span class="nav-icon">♟</span>
+        <span>Admin</span>
+        <span class="chevron">⌄</span>
+      </a>
+
+      <a href="#" class="nav-link">
+        <span class="nav-icon">◷</span>
+        <span>Weekly Timesheet</span>
+        <span class="chevron">⌄</span>
+      </a>
+    </nav>
+
+    <button class="profile" aria-label="User profile">
+      MV <span>⌄</span>
+    </button>
+  </header>
+
+  <main class="content" id="projects">
+    <div class="page-title">
+      <h2><span class="title-icon">☷</span> List of Projects</h2>
+    </div>
+
+    <!-- Success Toast -->
+    @if (successMessage) {
+      <div class="toast-success">
+        {{ successMessage }}
+      </div>
+    }
+
+    <!-- Error Message -->
+    @if (errorMessage) {
+      <div class="toast-error">
+        {{ errorMessage }}
+        <button class="toast-close" (click)="errorMessage = ''">✕</button>
+      </div>
+    }
+
+    <!-- Loading Spinner -->
+    @if (loading) {
+      <div class="loading-bar">
+        <div class="loading-bar-inner"></div>
+      </div>
+    }
+
+    <section class="status-toolbar">
+      <div class="status-tabs">
+        <button
+          class="status-tab"
+          [class.active]="filterStatus === 'All'"
+          (click)="filterStatus = 'All'"
+        >
+          <b>{{ getStatusCount('All') }}</b> All
+        </button>
+
+        <button
+          class="status-tab"
+          [class.active]="filterStatus === 'In Progress'"
+          (click)="filterStatus = 'In Progress'"
+        >
+          <b>{{ getStatusCount('In Progress') }}</b> In Progress
+        </button>
+
+        <button
+          class="status-tab"
+          [class.active]="filterStatus === 'Completed'"
+          (click)="filterStatus = 'Completed'"
+        >
+          <b>{{ getStatusCount('Completed') }}</b> Completed
+        </button>
+
+        <button
+          class="status-tab"
+          [class.active]="filterStatus === 'Draft'"
+          (click)="filterStatus = 'Draft'"
+        >
+          <b>{{ getStatusCount('Draft') }}</b> Draft
+        </button>
+
+        <button
+          class="status-tab"
+          [class.active]="filterStatus === 'Active'"
+          (click)="filterStatus = 'Active'"
+        >
+          <b>{{ getStatusCount('Active') }}</b> Active
+        </button>
+      </div>
+
+      <div class="toolbar-actions">
+        <button
+          class="text-button"
+          (click)="showFilters = !showFilters"
+        >
+          ⚑ &nbsp; {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+        </button>
+
+        <button
+          class="create-button"
+          (click)="showCreateForm = !showCreateForm"
+        >
+          ＋ &nbsp; Create Project
+        </button>
+      </div>
+    </section>
+
+    <!-- Create Project Form -->
+    @if (showCreateForm) {
+      <section class="create-form animate-slide-down">
+        <div class="form-header">
+          <h3>✨ Create New Project</h3>
+          <button class="close-form-btn" (click)="showCreateForm = false">✕</button>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Project Code <span class="required">*</span></label>
+            <input
+              placeholder="e.g. PRJ-001"
+              [(ngModel)]="newProject.code"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Customer Name <span class="required">*</span></label>
+            <input
+              placeholder="e.g. TCS"
+              [(ngModel)]="newProject.customer"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Project Name <span class="required">*</span></label>
+            <input
+              placeholder="e.g. Portal Development"
+              [(ngModel)]="newProject.name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Start Date</label>
+            <input
+              type="date"
+              [(ngModel)]="newProject.startDate"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>End Date</label>
+            <input
+              type="date"
+              [(ngModel)]="newProject.endDate"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Estimated Hours</label>
+            <input
+              type="number"
+              placeholder="0"
+              [(ngModel)]="newProject.estimatedHours"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Onshore Manager</label>
+            <input
+              placeholder="e.g. John Doe"
+              [(ngModel)]="newProject.onshoreManager"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Offshore Manager</label>
+            <input
+              placeholder="e.g. Dheeraj"
+              [(ngModel)]="newProject.offshoreManager"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Status</label>
+            <select [(ngModel)]="newProject.status">
+              <option value="In Progress">In Progress</option>
+              <option value="Draft">Draft</option>
+              <option value="Completed">Completed</option>
+              <option value="Active">Active</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="save-button" (click)="addProject()">
+            💾 Save Project
+          </button>
+          <button class="cancel-button" (click)="showCreateForm = false">
+            Cancel
+          </button>
+        </div>
+      </section>
+    }
+
+    <!-- Edit Project Modal -->
+    @if (editProject) {
+      <div class="modal-overlay" (click)="cancelEdit()">
+        <section class="edit-modal animate-slide-down" (click)="$event.stopPropagation()">
+          <div class="form-header">
+            <h3>✏️ Edit Project — {{ editProject.code }}</h3>
+            <button class="close-form-btn" (click)="cancelEdit()">✕</button>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Project Code <span class="required">*</span></label>
+              <input [(ngModel)]="editProject.code" />
+            </div>
+
+            <div class="form-group">
+              <label>Customer Name <span class="required">*</span></label>
+              <input [(ngModel)]="editProject.customer" />
+            </div>
+
+            <div class="form-group">
+              <label>Project Name <span class="required">*</span></label>
+              <input [(ngModel)]="editProject.name" />
+            </div>
+
+            <div class="form-group">
+              <label>Start Date</label>
+              <input type="date" [(ngModel)]="editProject.startDate" />
+            </div>
+
+            <div class="form-group">
+              <label>End Date</label>
+              <input type="date" [(ngModel)]="editProject.endDate" />
+            </div>
+
+            <div class="form-group">
+              <label>Revised End Date</label>
+              <input type="date" [(ngModel)]="editProject.revisedEndDate" />
+            </div>
+
+            <div class="form-group">
+              <label>Renewal Date</label>
+              <input type="date" [(ngModel)]="editProject.renewalDate" />
+            </div>
+
+            <div class="form-group">
+              <label>Issue Date</label>
+              <input type="date" [(ngModel)]="editProject.issueDate" />
+            </div>
+
+            <div class="form-group">
+              <label>Estimated Hours</label>
+              <input type="number" [(ngModel)]="editProject.estimatedHours" />
+            </div>
+
+            <div class="form-group">
+              <label>Actual Hours</label>
+              <input type="number" [(ngModel)]="editProject.actualHours" />
+            </div>
+
+            <div class="form-group">
+              <label>Onshore Manager</label>
+              <input [(ngModel)]="editProject.onshoreManager" />
+            </div>
+
+            <div class="form-group">
+              <label>Offshore Manager</label>
+              <input [(ngModel)]="editProject.offshoreManager" />
+            </div>
+
+            <div class="form-group">
+              <label>Status</label>
+              <select [(ngModel)]="editProject.status">
+                <option value="In Progress">In Progress</option>
+                <option value="Draft">Draft</option>
+                <option value="Completed">Completed</option>
+                <option value="Active">Active</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="save-button" (click)="saveEdit()">
+              💾 Update Project
+            </button>
+            <button class="cancel-button" (click)="cancelEdit()">
+              Cancel
+            </button>
+          </div>
+        </section>
+      </div>
+    }
+
+    <!-- Filter Panel -->
+    <section class="filter-panel">
+      <input
+        class="search-box"
+        placeholder="🔍 Search By Project Name, Project Code, or Client Name"
+        [(ngModel)]="searchText"
+      />
+
+      <select [(ngModel)]="selectedColumn" aria-label="Select search column">
+        <option value="all">All Columns</option>
+        <option value="code">Project Code</option>
+        <option value="customer">Customer Name</option>
+        <option value="name">Project Name</option>
+      </select>
+
+      <button
+        class="clear-button"
+        (click)="searchText = ''; selectedColumn = 'all'"
+      >
+        Clear Filters ⊗
+      </button>
+    </section>
+
+    <!-- Data Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Project Code</th>
+            <th>Customer Name</th>
+            <th>Project Name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Revised End Date</th>
+            <th>Renewal Date</th>
+            <th>Issue Date</th>
+            <th>Estimated Hours</th>
+            <th>Actual Hours</th>
+            <th>Onshore Manager</th>
+            <th>Offshore Manager</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (project of filteredProjects; track project.id) {
+            <tr>
+              <td><a href="#projects" class="code-link">{{ project.code }}</a></td>
+              <td>{{ project.customer }}</td>
+              <td><a href="#projects" class="name-link">{{ project.name }}</a></td>
+              <td>{{ project.startDate || '—' }}</td>
+              <td>{{ project.endDate || '—' }}</td>
+              <td>{{ project.revisedEndDate || '—' }}</td>
+              <td>{{ project.renewalDate || '—' }}</td>
+              <td>{{ project.issueDate || '—' }}</td>
+              <td class="number-cell">{{ project.estimatedHours }}</td>
+              <td class="number-cell">{{ project.actualHours ?? '—' }}</td>
+              <td>{{ project.onshoreManager || '—' }}</td>
+              <td>{{ project.offshoreManager || '—' }}</td>
+              <td>
+                <span class="status-badge"
+                  [class.status-progress]="project.status === 'In Progress'"
+                  [class.status-completed]="project.status === 'Completed'"
+                  [class.status-draft]="project.status === 'Draft'"
+                  [class.status-active]="project.status === 'Active'"
+                >
+                  {{ project.status }}
+                </span>
+              </td>
+              <td class="action-cell">
+                <button class="action-btn edit-btn" title="Edit" (click)="startEdit(project)">✏️</button>
+                <button class="action-btn delete-btn" title="Delete" (click)="deleteProject(project)">🗑️</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="14" class="empty-row">
+                @if (loading) {
+                  Loading projects...
+                } @else {
+                  No matching projects found.
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      Showing {{ filteredProjects.length }} of {{ projects.length }} projects
+    </footer>
+  </main>
+</div>

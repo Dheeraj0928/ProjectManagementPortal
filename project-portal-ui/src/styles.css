@@ -1,0 +1,63 @@
+/* You can add global styles to this file, and also import other style files */
+
+html {
+  min-height: 100%;
+  background: #ffffff;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+
+/* SVM logo size and alignment */
+.logo {
+  min-width: 260px;
+  width: 260px;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 20px 0 0;
+  border-right: 1px solid #d9dfe3;
+  box-sizing: border-box;
+}
+
+.company-logo {
+  width: 230px;
+  height: 72px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Remove old text logo */
+.logo-mark,
+.logo strong {
+  display: none;
+}
+
+@media (max-width: 1000px) {
+  .logo {
+    min-width: 200px;
+    width: 200px;
+    padding-right: 12px;
+  }
+
+  .company-logo {
+    width: 180px;
+    height: 65px;
+  }
+}
