@@ -1,7 +1,28 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { ProjectService, Project } from './services/project';
+import { ProjectForm } from './components/project-form/project-form';
+import { Pagination } from './components/pagination/pagination';
+import {
+  LucideFolderKanban,
+  LucideUsers,
+  LucideChartNoAxesCombined,
+  LucideContactRound,
+  LucideShieldCheck,
+  LucideCalendarClock,
+  LucideChevronDown,
+  LucideList,
+  LucideSlidersHorizontal,
+  LucidePlus,
+  LucideX,
+  LucidePencil,
+  LucideTrash2,
+  LucideSearch,
+  LucideRotateCcw,
+  LucideCircleCheck,
+  LucideCircleAlert
+} from '@lucide/angular';
+import { ProjectService, CreateProjectDto, Project } from './services/project';
 
 interface ProjectRow {
   id: number;
@@ -18,17 +39,37 @@ interface ProjectRow {
   onshoreManager: string;
   offshoreManager: string;
   status: string;
-  isEditing?: boolean;
 }
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [
+    ProjectForm,
+    Pagination,
+    FormsModule,
+    LucideFolderKanban,
+    LucideUsers,
+    LucideChartNoAxesCombined,
+    LucideContactRound,
+    LucideShieldCheck,
+    LucideCalendarClock,
+    LucideChevronDown,
+    LucideList,
+    LucideSlidersHorizontal,
+    LucidePlus,
+    LucideX,
+    LucidePencil,
+    LucideTrash2,
+    LucideSearch,
+    LucideRotateCcw,
+    LucideCircleCheck,
+    LucideCircleAlert
+  ],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
   showFilters = false;
   showCreateForm = false;
   searchText = '';
@@ -37,198 +78,238 @@ export class App implements OnInit {
   loading = false;
   errorMessage = '';
   successMessage = '';
+  savingProject = false;
+  createError = '';
+  editError = '';
 
-  newProject = {
-    code: '',
-    customer: '',
-    name: '',
-    startDate: '',
-    endDate: '',
-    estimatedHours: 0,
-    onshoreManager: '',
-    offshoreManager: '',
-    status: 'In Progress'
-  };
+  currentPage = 1;
+  pageSize = 10;
+  totalCount = 0;
+  totalProjects = 0;
+  statusCounts: Record<string, number> = {};
+  private projectsRequest?: Subscription;
 
   projects: ProjectRow[] = [];
 
   // Edit state
   editProject: ProjectRow | null = null;
 
-  constructor(private projectService: ProjectService) {}
+  constructor(
+    private projectService: ProjectService,
+    private changeDetector: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadProjects();
   }
 
-  loadProjects(): void {
-    this.loading = true;
-    this.errorMessage = '';
-
-    this.projectService.getProjects().subscribe({
-      next: (data) => {
-        this.projects = data.map(project => ({
-          id: project.id,
-          code: project.code ?? '',
-          customer: project.customer ?? '',
-          name: project.name ?? '',
-          startDate: project.startDate ? this.formatDateForDisplay(project.startDate) : '',
-          endDate: project.endDate ? this.formatDateForDisplay(project.endDate) : '',
-          revisedEndDate: project.revisedEndDate ? this.formatDateForDisplay(project.revisedEndDate) : '',
-          renewalDate: project.renewalDate ? this.formatDateForDisplay(project.renewalDate) : '',
-          issueDate: project.issueDate ? this.formatDateForDisplay(project.issueDate) : '',
-          estimatedHours: project.estimatedHours ?? 0,
-          actualHours: project.actualHours ?? null,
-          onshoreManager: project.onshoreManager ?? '',
-          offshoreManager: project.offshoreManager ?? '',
-          status: project.status ?? 'Draft'
-        }));
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Projects load failed:', error);
-        this.errorMessage = 'Projects load nahi hue. Backend API check karo.';
-        this.loading = false;
-      }
-    });
+  ngOnDestroy(): void {
+    this.projectsRequest?.unsubscribe();
   }
 
-  formatDateForDisplay(dateStr: string): string {
-    if (!dateStr) return '';
+  loadProjects(): void {
+    // Cancel an older request so fast searches cannot display outdated results.
+    this.projectsRequest?.unsubscribe();
+    this.loading = true;
+    this.errorMessage = '';
+    this.projects = [];
+
+    this.projectsRequest = this.projectService
+      .getProjects(
+        this.currentPage,
+        this.pageSize,
+        this.searchText,
+        this.selectedColumn,
+        this.filterStatus
+      )
+      .subscribe({
+        next: (data) => {
+          this.currentPage = data.pageNumber;
+          this.pageSize = data.pageSize;
+          this.totalCount = data.totalCount;
+          this.totalProjects = data.totalProjects;
+          this.statusCounts = data.statusCounts;
+          this.projects = data.items.map((project) => this.toProjectRow(project));
+          this.loading = false;
+          this.changeDetector.markForCheck();
+        },
+        error: (error) => {
+          this.totalCount = 0;
+          this.currentPage = 1;
+          console.error('Projects load failed:', error);
+          this.errorMessage = 'Projects load nahi hue. Backend API check karo.';
+          this.loading = false;
+          this.changeDetector.markForCheck();
+        }
+      });
+  }
+
+  private toProjectRow(project: Project): ProjectRow {
+    return {
+      id: project.id,
+      code: project.code ?? '',
+      customer: project.customer ?? '',
+      name: project.name ?? '',
+      startDate: this.formatDateForDisplay(project.startDate),
+      endDate: this.formatDateForDisplay(project.endDate),
+      revisedEndDate: this.formatDateForDisplay(project.revisedEndDate),
+      renewalDate: this.formatDateForDisplay(project.renewalDate),
+      issueDate: this.formatDateForDisplay(project.issueDate),
+      estimatedHours: project.estimatedHours ?? 0,
+      actualHours: project.actualHours ?? null,
+      onshoreManager: project.onshoreManager ?? '',
+      offshoreManager: project.offshoreManager ?? '',
+      status: project.status ?? 'Draft'
+    };
+  }
+
+  formatDateForDisplay(dateValue?: string | null): string {
+    if (!dateValue) {
+      return '';
+    }
     try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return '';
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) {
+        return '';
+      }
       return date.toISOString().split('T')[0];
     } catch {
       return '';
     }
   }
 
-  get filteredProjects(): ProjectRow[] {
-    const query = this.searchText.trim().toLowerCase();
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+  }
 
-    return this.projects.filter(project => {
-      const values = [
-        project.code,
-        project.customer,
-        project.name
-      ];
+  changePage(page: number): void {
+    if (this.loading || page < 1 || page > this.totalPages) {
+      return;
+    }
+    this.currentPage = page;
+    this.loadProjects();
+  }
 
-      const matchesSearch = !query ||
-        (this.selectedColumn === 'all'
-          ? values.some(value => (value ?? '').toLowerCase().includes(query))
-          : String((project as any)[this.selectedColumn] ?? '')
-              .toLowerCase().includes(query));
+  changePageSize(size: number): void {
+    if (this.loading) {
+      return;
+    }
+    this.pageSize = size;
+    this.applyFilters();
+  }
 
-      const matchesStatus =
-        this.filterStatus === 'All' ||
-        project.status === this.filterStatus;
+  applyFilters(): void {
+    this.currentPage = 1;
+    this.loadProjects();
+  }
 
-      return matchesSearch && matchesStatus;
-    });
+  selectStatus(status: string): void {
+    this.filterStatus = status;
+    this.applyFilters();
+  }
+
+  clearFilters(): void {
+    this.searchText = '';
+    this.selectedColumn = 'all';
+    this.filterStatus = 'All';
+    this.applyFilters();
   }
 
   getStatusCount(status: string): number {
-    if (status === 'All') return this.projects.length;
-    return this.projects.filter(p => p.status === status).length;
+    if (status === 'All') {
+      return this.totalProjects;
+    }
+    return this.statusCounts[status] ?? 0;
   }
 
   showSuccess(message: string): void {
     this.successMessage = message;
-    setTimeout(() => this.successMessage = '', 3000);
+    setTimeout(() => {
+      this.successMessage = '';
+      this.changeDetector.markForCheck();
+    }, 3000);
   }
 
-  addProject(): void {
-    if (
-      !this.newProject.code.trim() ||
-      !this.newProject.customer.trim() ||
-      !this.newProject.name.trim()
-    ) {
-      alert('Project Code, Customer aur Project Name bharna zaroori hai.');
+  toggleCreateForm(): void {
+    if (this.savingProject) {
       return;
     }
+    this.createError = '';
+    this.showCreateForm = !this.showCreateForm;
+  }
 
-    const project: any = {
-      code: this.newProject.code.trim(),
-      customer: this.newProject.customer.trim(),
-      name: this.newProject.name.trim(),
-      startDate: this.newProject.startDate || null,
-      endDate: this.newProject.endDate || null,
-      estimatedHours: this.newProject.estimatedHours || 0,
-      onshoreManager: this.newProject.onshoreManager.trim(),
-      offshoreManager: this.newProject.offshoreManager.trim(),
-      status: this.newProject.status || 'In Progress'
-    };
+  closeCreateForm(): void {
+    if (this.savingProject) {
+      return;
+    }
+    this.showCreateForm = false;
+    this.createError = '';
+  }
 
-    this.projectService.createProject(project).subscribe({
+  addProject(projectDetails: CreateProjectDto): void {
+    if (this.savingProject) {
+      return;
+    }
+    this.savingProject = true;
+    this.createError = '';
+
+    this.projectService.createProject(projectDetails).subscribe({
       next: () => {
-        this.newProject = {
-          code: '',
-          customer: '',
-          name: '',
-          startDate: '',
-          endDate: '',
-          estimatedHours: 0,
-          onshoreManager: '',
-          offshoreManager: '',
-          status: 'In Progress'
-        };
+        this.savingProject = false;
         this.showCreateForm = false;
-        this.loadProjects();
-        this.showSuccess('✅ Project successfully create ho gaya!');
+        // Reset filters so the new project appears on page one.
+        this.clearFilters();
+        this.showSuccess('Project successfully created!');
+        this.changeDetector.markForCheck();
       },
       error: (error) => {
+        this.savingProject = false;
         console.error('Project create failed:', error);
-        alert('Project save nahi hua. Backend terminal check karo.');
+        this.createError =
+          'Project could not be saved. Your details are still here. Please try again.';
+        this.changeDetector.markForCheck();
       }
     });
   }
 
   startEdit(project: ProjectRow): void {
+    if (this.savingProject) {
+      return;
+    }
+    this.editError = '';
     this.editProject = { ...project };
   }
 
   cancelEdit(): void {
-    this.editProject = null;
-  }
-
-  saveEdit(): void {
-    if (!this.editProject) return;
-
-    if (
-      !this.editProject.code.trim() ||
-      !this.editProject.customer.trim() ||
-      !this.editProject.name.trim()
-    ) {
-      alert('Project Code, Customer aur Project Name zaroori hai.');
+    if (this.savingProject) {
       return;
     }
+    this.editProject = null;
+    this.editError = '';
+  }
 
-    const dto: any = {
-      code: this.editProject.code.trim(),
-      customer: this.editProject.customer.trim(),
-      name: this.editProject.name.trim(),
-      startDate: this.editProject.startDate || null,
-      endDate: this.editProject.endDate || null,
-      revisedEndDate: this.editProject.revisedEndDate || null,
-      renewalDate: this.editProject.renewalDate || null,
-      issueDate: this.editProject.issueDate || null,
-      estimatedHours: this.editProject.estimatedHours || 0,
-      actualHours: this.editProject.actualHours,
-      onshoreManager: this.editProject.onshoreManager?.trim() ?? '',
-      offshoreManager: this.editProject.offshoreManager?.trim() ?? '',
-      status: this.editProject.status || 'In Progress'
-    };
+  saveEdit(projectDetails: CreateProjectDto): void {
+    if (!this.editProject || this.savingProject) {
+      return;
+    }
+    this.savingProject = true;
+    this.editError = '';
 
-    this.projectService.updateProject(this.editProject.id, dto).subscribe({
+    // The shared form returns the same DTO for Create and Edit.
+    this.projectService.updateProject(this.editProject.id, projectDetails).subscribe({
       next: () => {
+        this.savingProject = false;
         this.editProject = null;
         this.loadProjects();
-        this.showSuccess('✅ Project successfully update ho gaya!');
+        this.showSuccess('Project successfully updated!');
+        this.changeDetector.markForCheck();
       },
       error: (error) => {
-        console.error('Update failed:', error);
-        alert('Project update nahi hua. Check backend.');
+        this.savingProject = false;
+        console.error('Project update failed:', error);
+        this.editError =
+          'Project could not be updated. Your changes are still here. Please try again.';
+        this.changeDetector.markForCheck();
       }
     });
   }

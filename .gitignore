@@ -26,3 +26,8 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 .DS_Store
+
+
+Learning-Backend
+Learning-Frontend/learning-app/*
+LearningApi

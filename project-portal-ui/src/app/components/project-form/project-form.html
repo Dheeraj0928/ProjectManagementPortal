@@ -1,0 +1,276 @@
+<form (ngSubmit)="submitForm()" novalidate [attr.aria-busy]="saving">
+  <ol class="step-list" aria-label="Project form steps">
+    @for (label of stepLabels; track $index) {
+      <li
+        [class.current]="currentStep === $index + 1"
+        [class.completed]="currentStep > $index + 1"
+        [attr.aria-current]="currentStep === $index + 1 ? 'step' : null"
+      >
+        <span class="step-number">{{ $index + 1 }}</span>
+        <span>{{ label }}</span>
+      </li>
+    }
+  </ol>
+
+  <div class="step-heading" aria-live="polite">
+    <p>Step {{ currentStep }} of {{ totalSteps }}</p>
+    <h3>{{ stepLabels[currentStep - 1] }}</h3>
+  </div>
+
+  <div class="step-content">
+    @if (validationMessage) {
+      <p class="form-error" role="alert">{{ validationMessage }}</p>
+    }
+    @if (saveError) {
+      <p class="form-error" role="alert">{{ saveError }}</p>
+    }
+
+    <fieldset class="step-fields" [disabled]="saving">
+      <legend class="sr-only">{{ stepLabels[currentStep - 1] }}</legend>
+      @if (currentStep === 1) {
+        <p class="step-hint">Enter the project identity. Fields marked * are required.</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label [attr.for]="mode + '-code'">Project Code <span class="required">*</span></label>
+            <input
+              [id]="mode + '-code'"
+              name="code"
+              type="text"
+              [(ngModel)]="formData.code"
+              required
+              placeholder="e.g. TCS-CP-101"
+            />
+          </div>
+          <div class="form-group">
+            <label [attr.for]="mode + '-customer'"
+              >Customer Name <span class="required">*</span></label
+            >
+            <input
+              [id]="mode + '-customer'"
+              name="customer"
+              type="text"
+              [(ngModel)]="formData.customer"
+              required
+              placeholder="e.g. TCS"
+            />
+          </div>
+          <div class="form-group">
+            <label [attr.for]="mode + '-name'">Project Name <span class="required">*</span></label>
+            <input
+              [id]="mode + '-name'"
+              name="name"
+              type="text"
+              [(ngModel)]="formData.name"
+              required
+              placeholder="e.g. Customer Portal"
+            />
+          </div>
+          <div class="form-group">
+            <label [attr.for]="mode + '-status'">Status</label>
+            <select [id]="mode + '-status'" name="status" [(ngModel)]="formData.status">
+              <option value="In Progress">In Progress</option>
+              <option value="Draft">Draft</option>
+              <option value="Completed">Completed</option>
+              <option value="Active">Active</option>
+            </select>
+          </div>
+        </div>
+      }
+
+      @if (currentStep === 2) {
+        <p class="step-hint">Add the project timeline. Dates can be left blank.</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label [attr.for]="mode + '-startDate'">Start Date</label>
+            <input
+              [id]="mode + '-startDate'"
+              name="startDate"
+              type="date"
+              [(ngModel)]="formData.startDate"
+            />
+          </div>
+          <div class="form-group">
+            <label [attr.for]="mode + '-endDate'">End Date</label>
+            <input
+              [id]="mode + '-endDate'"
+              name="endDate"
+              type="date"
+              [(ngModel)]="formData.endDate"
+            />
+          </div>
+          <div class="form-group">
+            <label [attr.for]="mode + '-revisedEndDate'">Revised End Date</label>
+            <input
+              [id]="mode + '-revisedEndDate'"
+              name="revisedEndDate"
+              type="date"
+              [(ngModel)]="formData.revisedEndDate"
+            />
+          </div>
+          <div class="form-group">
+            <label [attr.for]="mode + '-renewalDate'">Renewal Date</label>
+            <input
+              [id]="mode + '-renewalDate'"
+              name="renewalDate"
+              type="date"
+              [(ngModel)]="formData.renewalDate"
+            />
+          </div>
+          <div class="form-group">
+            <label [attr.for]="mode + '-issueDate'">Issue Date</label>
+            <input
+              [id]="mode + '-issueDate'"
+              name="issueDate"
+              type="date"
+              [(ngModel)]="formData.issueDate"
+            />
+          </div>
+        </div>
+      }
+
+      @if (currentStep === 3) {
+        <p class="step-hint">
+          Set the estimated effort and managers. Actual hours and manager names are optional.
+        </p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label [attr.for]="mode + '-estimatedHours'"
+              >Estimated Hours <span class="required">*</span></label
+            >
+            <input
+              [id]="mode + '-estimatedHours'"
+              name="estimatedHours"
+              type="number"
+              [(ngModel)]="formData.estimatedHours"
+              required
+              min="0"
+              step="0.01"
+            />
+          </div>
+          <div class="form-group">
+            <label [attr.for]="mode + '-actualHours'">Actual Hours</label>
+            <input
+              [id]="mode + '-actualHours'"
+              name="actualHours"
+              type="number"
+              [(ngModel)]="formData.actualHours"
+              min="0"
+              step="0.01"
+            />
+          </div>
+          <div class="form-group">
+            <label [attr.for]="mode + '-onshoreManager'">Onshore Manager</label>
+            <input
+              [id]="mode + '-onshoreManager'"
+              name="onshoreManager"
+              type="text"
+              [(ngModel)]="formData.onshoreManager"
+            />
+          </div>
+          <div class="form-group">
+            <label [attr.for]="mode + '-offshoreManager'">Offshore Manager</label>
+            <input
+              [id]="mode + '-offshoreManager'"
+              name="offshoreManager"
+              type="text"
+              [(ngModel)]="formData.offshoreManager"
+            />
+          </div>
+        </div>
+      }
+
+      @if (currentStep === 4) {
+        <p class="step-hint">Check your details before saving. Use Back to make changes.</p>
+        <section class="review-section">
+          <h4>Basic Details</h4>
+          <dl>
+            <div>
+              <dt>Project Code</dt>
+              <dd>{{ formData.code }}</dd>
+            </div>
+            <div>
+              <dt>Customer</dt>
+              <dd>{{ formData.customer }}</dd>
+            </div>
+            <div>
+              <dt>Project Name</dt>
+              <dd>{{ formData.name }}</dd>
+            </div>
+            <div>
+              <dt>Status</dt>
+              <dd>{{ formData.status }}</dd>
+            </div>
+          </dl>
+        </section>
+        <section class="review-section">
+          <h4>Project Dates</h4>
+          <dl>
+            <div>
+              <dt>Start Date</dt>
+              <dd>{{ formData.startDate || '—' }}</dd>
+            </div>
+            <div>
+              <dt>End Date</dt>
+              <dd>{{ formData.endDate || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Revised End Date</dt>
+              <dd>{{ formData.revisedEndDate || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Renewal Date</dt>
+              <dd>{{ formData.renewalDate || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Issue Date</dt>
+              <dd>{{ formData.issueDate || '—' }}</dd>
+            </div>
+          </dl>
+        </section>
+        <section class="review-section">
+          <h4>Hours & Managers</h4>
+          <dl>
+            <div>
+              <dt>Estimated Hours</dt>
+              <dd>{{ formData.estimatedHours ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt>Actual Hours</dt>
+              <dd>{{ formData.actualHours ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt>Onshore Manager</dt>
+              <dd>{{ formData.onshoreManager || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Offshore Manager</dt>
+              <dd>{{ formData.offshoreManager || '—' }}</dd>
+            </div>
+          </dl>
+        </section>
+      }
+    </fieldset>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="secondary-button" (click)="cancelled.emit()" [disabled]="saving">
+      Cancel
+    </button>
+    <div class="step-actions">
+      @if (currentStep > 1) {
+        <button type="button" class="secondary-button" (click)="previousStep()" [disabled]="saving">
+          Back
+        </button>
+      }
+      @if (currentStep < totalSteps) {
+        <button type="button" class="primary-button" (click)="nextStep()" [disabled]="saving">
+          Next
+        </button>
+      } @else {
+        <button type="submit" class="primary-button" [disabled]="saving">
+          {{ submitButtonText }}
+        </button>
+      }
+    </div>
+  </div>
+</form>

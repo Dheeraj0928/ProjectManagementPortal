@@ -36,16 +36,34 @@ export interface CreateProjectDto {
   status: string;
 }
 
+export interface ProjectPage {
+  items: Project[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalProjects: number;
+  statusCounts: Record<string, number>;
+}
+
 @Injectable({
   providedIn: 'root'
 })
+
 export class ProjectService {
   private apiUrl = 'http://localhost:5211/api/projects';
 
   constructor(private http: HttpClient) {}
 
-  getProjects(): Observable<Project[]> {
-    return this.http.get<Project[]>(this.apiUrl);
+  getProjects(
+    pageNumber = 1,
+    pageSize = 10,
+    searchText = '',
+    searchColumn = 'all',
+    status = 'All'
+  ): Observable<ProjectPage> {
+    return this.http.get<ProjectPage>(this.apiUrl, {
+      params: { pageNumber, pageSize, searchText, searchColumn, status }
+    });
   }
 
   createProject(dto: CreateProjectDto): Observable<Project> {

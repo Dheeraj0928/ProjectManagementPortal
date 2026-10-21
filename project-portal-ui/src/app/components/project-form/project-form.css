@@ -1,0 +1,241 @@
+:host {
+  display: block;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  height: clamp(400px, 60vh, 600px);
+}
+.step-list,
+.step-heading,
+.form-actions {
+  flex-shrink: 0;
+}
+.step-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding: 4px;
+}
+* {
+  box-sizing: border-box;
+}
+.step-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+}
+.step-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #dce2e7;
+  border-radius: 8px;
+  color: #5b6b79;
+  background: #f8fafc;
+  font-size: 13px;
+}
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: #526779;
+  background: #e7edf2;
+  font-weight: 700;
+}
+.step-list .current {
+  color: #174d70;
+  border-color: #1e6b9a;
+  background: #edf6fc;
+  font-weight: 600;
+}
+.current .step-number {
+  background: #1e6b9a;
+  color: white;
+}
+.step-list .completed {
+  border-color: #b3d8c6;
+  background: #f1f9f5;
+}
+.completed .step-number {
+  color: #fff;
+  background: #23734c;
+}
+.step-heading p {
+  margin: 0 0 6px;
+  color: #687783;
+  font-size: 12px;
+}
+.step-heading h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #35536a;
+}
+.step-hint {
+  margin: 16px 0;
+  color: #5b6b79;
+  font-size: 13px;
+}
+.step-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+label {
+  color: #496477;
+  font-size: 13px;
+  font-weight: 600;
+}
+.required {
+  color: #bc2837;
+}
+input,
+select,
+button {
+  font: inherit;
+}
+input,
+select {
+  width: 100%;
+  height: 42px;
+  border: 1px solid #dce2e7;
+  border-radius: 7px;
+  padding: 0 12px;
+  color: #344e61;
+  background: #fafbfc;
+}
+input:focus,
+select:focus {
+  outline: 2px solid #1e6b9a;
+  outline-offset: 2px;
+  background: #fff;
+}
+.form-error {
+  padding: 12px 16px;
+  border-left: 4px solid #bc2837;
+  border-radius: 6px;
+  color: #842029;
+  background: #fff0f0;
+}
+.review-section {
+  border: 1px solid #dce2e7;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.review-section h4 {
+  margin: 0 0 12px;
+  color: #35536a;
+}
+dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+dt {
+  font-size: 12px;
+  color: #687783;
+  margin-bottom: 5px;
+}
+dd {
+  margin: 0;
+  color: #344e61;
+  overflow-wrap: anywhere;
+}
+.form-actions,
+.step-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.form-actions {
+  justify-content: space-between;
+  border-top: 1px solid #e3e9ee;
+  padding-top: 18px;
+  margin-top: 24px;
+}
+button {
+  min-height: 40px;
+  padding: 8px 20px;
+  border-radius: 7px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.primary-button {
+  border: 1px solid #1e6b9a;
+  background: #1e6b9a;
+  color: #fff;
+}
+.primary-button:hover:not(:disabled) {
+  background: #185a83;
+}
+.secondary-button {
+  border: 1px solid #d5dce1;
+  background: #fff;
+  color: #38576c;
+}
+.secondary-button:hover:not(:disabled) {
+  background: #f0f5f8;
+}
+button:focus-visible {
+  outline: 2px solid #1e6b9a;
+  outline-offset: 3px;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+@media (max-width: 700px) {
+  .step-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 400px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .step-list li {
+    padding: 8px;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .form-actions,
+  .step-actions {
+    gap: 8px;
+  }
+  button {
+    padding: 8px 12px;
+  }
+}

@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectPortal.Api.Data;
@@ -17,14 +16,76 @@ public class ProjectsController : ControllerBase
         _context = context;
     }
 
-    // GET: api/projects
-    // Get all projects
+    // GET: api/projects?pageNumber=1&pageSize=10
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
+    public async Task< ActionResult<ProjectPageDto>> GetProjects(
+        int pageNumber = 1,
+        int pageSize = 10,
+        string searchText = "",
+        string searchColumn = "all",
+        string status = "All",
+        CancellationToken cancellationToken = default)
     {
-        return await _context.Projects
+        if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+        {
+            return BadRequest("Page number must be positive and page size must be between 1 and 100.");
+        }
+
+        if (searchColumn != "all" && searchColumn != "code" &&
+            searchColumn != "customer" && searchColumn != "name")
+        {
+            return BadRequest("Invalid search column.");
+        }
+
+        var query = _context.Projects.AsNoTracking();
+
+        // Counts describe the full list, not just the current page.
+        var statusCounts = await query
+            .GroupBy(p => p.Status)
+            .Select(group => new { Status = group.Key, Count = group.Count() })
+            .ToDictionaryAsync(item => item.Status, item => item.Count, cancellationToken);
+
+        var search = searchText.Trim().ToLower();
+        if (search.Length > 0)
+        {
+            if (searchColumn == "code")
+                query = query.Where(p => p.Code.ToLower().Contains(search));
+            else if (searchColumn == "customer")
+                query = query.Where(p => p.Customer.ToLower().Contains(search));
+            else if (searchColumn == "name")
+                query = query.Where(p => p.Name.ToLower().Contains(search));
+            else
+                query = query.Where(p => p.Code.ToLower().Contains(search) ||
+                    p.Customer.ToLower().Contains(search) || p.Name.ToLower().Contains(search));
+        }
+
+        if (status != "All")
+        {
+            query = query.Where(p => p.Status == status);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
+
+        // After deleting the last row on a page, return the last valid page.
+        pageNumber = Math.Min(pageNumber, totalPages);
+
+        var projects = await query
             .OrderByDescending(p => p.CreatedAt)
-            .ToListAsync();
+            .ThenByDescending(p => p.Id)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return Ok(new ProjectPageDto
+        {
+            Items = projects,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalProjects = statusCounts.Values.Sum(),
+            StatusCounts = statusCounts
+        });
     }
 
     // GET: api/projects/1
