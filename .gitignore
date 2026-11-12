@@ -31,3 +31,14 @@ $RECYCLE.BIN/
 Learning-Backend
 Learning-Frontend/learning-app/*
 LearningApi
+
+## Temporary browser files
+.chrome-details-check/
+.details-click-check.cjs
+
+## VS Code settings
+.vscode/
+
+## Environment files
+**/.env
+**/.env.*
