@@ -36,7 +36,7 @@ select {
   box-sizing: border-box;
 }
 
-.company-logo {
+.logo-img {
   width: 230px;
   height: 72px;
   object-fit: contain;
@@ -56,7 +56,7 @@ select {
     padding-right: 12px;
   }
 
-  .company-logo {
+  .logo-img {
     width: 180px;
     height: 65px;
   }

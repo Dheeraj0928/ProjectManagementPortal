@@ -1,0 +1,134 @@
+<header class="heading">
+  <div class="title"><svg lucideFolderKanban></svg><h2>Project Details</h2><span class="project-name">{{ project.name }}</span><span class="badge">{{ project.status }}</span></div>
+  <button type="button" (click)="closed.emit()">Close</button>
+</header>
+<nav class="tabs">
+  @for (name of tabs; track name) {
+    <button type="button" [class.active]="tab === name" (click)="tab = name">{{ name }}</button>
+  }
+  <button type="button" class="primary weekly" (click)="tab = 'Weekly Report'">Update Weekly Report</button>
+</nav>
+@if (loading) { <p class="note">Loading latest project details...</p> }
+@if (error) { <p class="error" role="alert">{{ error }}</p> }
+
+@if (tab === 'Overview') {
+  <section class="card">
+    <div class="card-head"><h3><svg lucideUsers></svg>Client Details</h3></div>
+    <dl class="grid">
+      <div><dt>Customer Name</dt><dd>{{ project.customer }}</dd></div>
+      <div><dt>Client Project Sector Type</dt><dd>—</dd></div>
+      <div><dt>Customer Address</dt><dd>—</dd></div>
+      <div><dt>Client Contact Person Name</dt><dd>{{ clientContactName || '—' }}</dd></div>
+      <div><dt>Client Contact Person Email</dt><dd>{{ clientContactEmail || '—' }}</dd></div>
+      <div><dt>Client Designated PM Name</dt><dd>—</dd></div>
+      <div><dt>Client Designated PM Email</dt><dd>—</dd></div>
+    </dl>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h3><svg lucideFolderKanban></svg>Project Details</h3><button type="button" class="link" (click)="edit.emit()"><svg lucidePencil></svg>Edit</button></div>
+    <dl class="grid">
+      <div><dt>Project Code</dt><dd>{{ project.code }}</dd></div>
+      <div><dt>Project Name</dt><dd>{{ project.name }}</dd></div>
+      <div><dt>Project Practice</dt><dd>—</dd></div>
+      <div><dt>Project Domain</dt><dd>—</dd></div>
+      <div><dt>Project Billing Type</dt><dd>—</dd></div>
+      <div><dt>Project Brief Description</dt><dd>—</dd></div>
+      <div><dt>Project Brief Scope</dt><dd>—</dd></div>
+      <div><dt>Total Project Value</dt><dd>—</dd></div>
+      <div><dt>Development Methodology</dt><dd>—</dd></div>
+      <div><dt>Project Technology</dt><dd>—</dd></div>
+      <div><dt>Project Start Date</dt><dd>{{ date(project.startDate) }}</dd></div>
+      <div><dt>Project Expected End Date</dt><dd>{{ date(project.endDate) }}</dd></div>
+      <div><dt>Revised End Date</dt><dd>{{ date(project.revisedEndDate) }}</dd></div>
+      <div><dt>Renewal Date</dt><dd>{{ date(project.renewalDate) }}</dd></div>
+      <div><dt>Issue Date</dt><dd>{{ date(project.issueDate) }}</dd></div>
+      <div><dt>Project Estimated Hours</dt><dd>{{ project.estimatedHours }}</dd></div>
+      <div><dt>Actual Hours</dt><dd>{{ project.actualHours ?? '—' }}</dd></div>
+      <div><dt>Onshore Project Manager</dt><dd>{{ project.onshoreManager || '—' }}</dd></div>
+      <div><dt>Offshore Project Manager</dt><dd>{{ project.offshoreManager || '—' }}</dd></div>
+      <div><dt>Project Lead</dt><dd>—</dd></div>
+      <div><dt>Account Manager</dt><dd>—</dd></div>
+    </dl>
+    <div class="documents">
+      <h4><svg lucideFileText></svg>Uploaded Documents</h4>
+      <p class="note">Document upload is not connected yet.</p>
+      <div class="doc-grid">
+        @for (name of ['Statement of Work', 'MSA', 'Purchase Order']; track name) {
+          <div class="doc"><strong><svg lucideFileText></svg>{{ name }}</strong><p>No document available.</p></div>
+        }
+      </div>
+    </div>
+    <p class="note">Fields shown as — are not available in the current project data.</p>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h3><svg lucideList></svg>Tasks</h3>
+      <div class="task-tools"><span>{{ totalHours }} Hrs Total Estimated Effort</span><span>{{ tasks.length }} Total Tasks</span><button type="button" class="link" (click)="startTask()">+ Add Task</button></div>
+    </div>
+    <p class="note">Database tasks are shown with any tasks saved in this browser. Add Task currently saves only in this browser.</p>
+    <div class="table-box">
+      <table>
+        <thead><tr><th>Module / Work Stream</th><th>WBS Sub Component</th><th>Category / SDLC Phase</th><th>Task</th><th>Sub Task</th><th>Employee</th><th>Task Start</th><th>Task End</th><th>Task Effort (hr)</th><th>Task Type</th><th>Actions</th></tr></thead>
+        <tbody>
+          @for (item of rows; track item.id) {
+            <tr>
+              <td>{{ item.stream }}</td><td>{{ item.release || '—' }}</td><td>{{ item.phase }}</td><td>{{ item.name }}</td><td>{{ item.subtask || '—' }}</td><td>{{ item.employee }}</td><td>{{ date(item.start) }}</td><td>{{ date(item.end) }}</td><td>{{ item.hours }}</td><td>{{ item.type }}</td>
+              <td><div class="actions">@if (isDatabaseTask(item)) { <span>Database record</span> } @else { <button type="button" class="link" aria-label="Edit task" (click)="startTask(item)"><svg lucidePencil></svg></button><button type="button" class="delete" aria-label="Delete task" (click)="deleteTask(item)"><svg lucideTrash2></svg></button><button type="button" class="toggle" [class.on]="item.active" [attr.aria-pressed]="item.active" (click)="toggleTask(item)">{{ item.active ? 'Active' : 'Inactive' }}</button> }</div></td>
+            </tr>
+          } @empty { <tr><td colspan="11" class="empty">No tasks added. Use Add Task to get started.</td></tr> }
+        </tbody>
+      </table>
+    </div>
+    <app-pagination [currentPage]="page" [pageSize]="10" [totalCount]="tasks.length" [itemCount]="rows.length" [showPageSize]="false" itemLabel="tasks" (pageChange)="page = $event"></app-pagination>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h3><svg lucideClock></svg>Estimated Efforts</h3></div>
+    <div class="efforts">
+      <aside><h4>Work Streams</h4>
+        @for (stream of streams; track stream) {
+          <button type="button" [class.chosen]="currentStream === stream" (click)="selectedStream = stream">{{ stream }}<small>Total Effort: {{ streamHours(stream) }} Hrs</small></button>
+        } @empty { <p class="note">No work streams saved for this project.</p> }
+      </aside>
+      <div class="phases"><h4>Phases <span> | Work Stream {{ currentStream || '—' }}</span></h4>
+        <div class="managers"><p>Onshore PM: {{ project.onshoreManager || '—' }}</p><p>Offshore PM: {{ project.offshoreManager || '—' }}</p><p>Start Date: {{ date(project.startDate) }}</p><p>End Date: {{ date(project.endDate) }}</p></div>
+        @for (phase of currentPhases; track phase.phaseId) {
+          <p>{{ phase.phaseName }} — {{ phase.description || '—' }}</p>
+          @for (effort of phase.efforts; track effort.phaseEffortId) {
+            <div class="phase"><span>{{ effort.releaseName }}</span><strong>{{ effort.estimatedHours }} Hrs</strong></div>
+          }
+        } @empty {
+          @for (item of streamTasks; track item.id) { <div class="phase"><span>{{ item.release || item.phase }} · {{ item.name }}</span><strong>{{ item.hours }} Hrs</strong></div> }
+        }
+      </div>
+    </div>
+  </section>
+} @else {
+  <section class="card"><h3>{{ tab }}</h3><p class="note">{{ tab }} is not connected for this project yet.</p><button type="button" (click)="tab = 'Overview'">Back to Overview</button></section>
+}
+
+@if (showTaskForm) {
+  <div class="overlay" (click)="showTaskForm = false">
+    <section class="dialog" role="dialog" aria-modal="true" aria-label="Task Details" (click)="$event.stopPropagation()">
+      <h3>{{ task.id ? 'Edit Task' : 'Add Task' }}</h3>
+      @if (error) { <p class="error" role="alert">{{ error }}</p> }
+      <form (ngSubmit)="saveTask()">
+        <div class="fields">
+          <label>Module / Work Stream<input name="stream" [(ngModel)]="task.stream" /></label>
+          <label>WBS Sub Component<input name="release" [(ngModel)]="task.release" /></label>
+          <label>Category / SDLC Phase<input name="phase" [(ngModel)]="task.phase" /></label>
+          <label>Task *<input name="name" [(ngModel)]="task.name" required /></label>
+          <label>Sub Task<input name="subtask" [(ngModel)]="task.subtask" /></label>
+          <label>Employee *<input name="employee" [(ngModel)]="task.employee" required /></label>
+          <label>Task Start<input name="start" type="date" [(ngModel)]="task.start" /></label>
+          <label>Task End<input name="end" type="date" [(ngModel)]="task.end" /></label>
+          <label>Task Effort (hr)<input name="hours" type="number" min="0" step="0.1" [(ngModel)]="task.hours" /></label>
+          <label>Task Type<select name="type" [(ngModel)]="task.type"><option>Non-Billable</option><option>Billable</option></select></label>
+        </div>
+        <div class="form-btns"><button type="submit" class="primary">Save Task</button><button type="button" (click)="showTaskForm = false">Cancel</button></div>
+      </form>
+    </section>
+  </div>
+}

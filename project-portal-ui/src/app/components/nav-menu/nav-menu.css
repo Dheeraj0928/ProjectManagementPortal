@@ -1,0 +1,28 @@
+:host { position: relative; display: block; flex-shrink: 0; }
+button { font: inherit; cursor: pointer; }
+.nav-btn {
+  display: flex; align-items: center; gap: 7px; height: 88px;
+  padding: 0; border: 0; background: transparent; color: #435b6d;
+  white-space: nowrap;
+}
+.nav-btn:hover { color: #1a3a52; }
+.arrow { width: 14px; height: 14px; transition: transform .15s; }
+.up { transform: rotate(180deg); }
+.menu, .submenu {
+  position: absolute; min-width: 190px; padding: 8px 0;
+  border-radius: 9px; background: white; color: #292929;
+  box-shadow: 0 3px 16px #0002; z-index: 200;
+}
+.menu { top: calc(100% - 8px); right: 0; width: max-content; max-width: calc(100vw - 24px); }
+.menu-row { position: relative; }
+.menu button, .submenu button {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 18px; width: 100%; padding: 12px 16px; border: 0;
+  text-align: left; color: inherit; background: white;
+}
+.menu button:hover, .menu button:focus-visible { background: #edf6fc; }
+.submenu { top: 0; left: 100%; width: max-content; }
+.next { font-size: 20px; line-height: 1; }
+@media (max-width: 1100px) {
+  .submenu { position: static; min-width: 0; box-shadow: none; padding-left: 12px; }
+}

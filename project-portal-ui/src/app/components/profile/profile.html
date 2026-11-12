@@ -1,0 +1,12 @@
+<button type="button" class="profile-btn" aria-label="User profile" [attr.aria-expanded]="open" (click)="toggle($event)">
+  <span class="avatar">{{ name.charAt(0) }}</span>
+  <svg lucideChevronDown class="arrow" [class.up]="open"></svg>
+</button>
+@if (open) {
+  <div class="profile-menu" (click)="$event.stopPropagation()">
+    <div class="info"><svg lucideUserRound></svg><span>{{ name }}</span></div>
+    <div class="info"><svg lucideMail></svg><span class="email">{{ email }}</span></div>
+    <div class="info"><svg lucideShieldCheck></svg><span>{{ role }}</span></div>
+    <button type="button" class="logout" (click)="logout()"><svg lucideLogOut></svg>Sign Out</button>
+  </div>
+}

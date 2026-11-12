@@ -14,6 +14,7 @@ export class Pagination {
   @Input() itemCount = 0;
   @Input() loading = false;
   @Input() itemLabel = 'items';
+  @Input() showPageSize = true;
   @Input() pageSizeOptions = [10, 25, 50];
   @Output() pageChange = new EventEmitter<number>();
   @Output() pageSizeChange = new EventEmitter<number>();

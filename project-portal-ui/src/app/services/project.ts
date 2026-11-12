@@ -20,6 +20,48 @@ export interface Project {
   createdAt?: string;
 }
 
+export interface ProjectDetail extends Project {
+  tasks: ProjectTaskRecord[];
+  workStreams: ProjectWorkStreamRecord[];
+  clientContacts: ClientContactRecord[];
+}
+
+export interface ProjectTaskRecord {
+  taskId: number;
+  workStream: string;
+  phase: string;
+  category: string;
+  taskName: string;
+  subTasks: string[];
+  employees: string[];
+  startDate?: string | null;
+  endDate?: string | null;
+  initialPlanHours: number;
+  taskType: string;
+  isActive: boolean;
+}
+
+export interface ProjectWorkStreamRecord {
+  workStreamId: number;
+  workStreamName: string;
+  phases: {
+    phaseId: number;
+    phaseName: string;
+    onshoreManager?: string | null;
+    offshoreManager?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
+    description?: string | null;
+    efforts: { phaseEffortId: number; releaseName: string; estimatedHours: number }[];
+  }[];
+}
+
+export interface ClientContactRecord {
+  contactName: string;
+  contactEmail: string;
+  contactType: string;
+}
+
 export interface CreateProjectDto {
   code: string;
   customer: string;
@@ -68,6 +110,10 @@ export class ProjectService {
 
   createProject(dto: CreateProjectDto): Observable<Project> {
     return this.http.post<Project>(this.apiUrl, dto);
+  }
+
+  getProject(id: number): Observable<ProjectDetail> {
+    return this.http.get<ProjectDetail>(`${this.apiUrl}/${id}`);
   }
 
   updateProject(id: number, dto: CreateProjectDto): Observable<void> {

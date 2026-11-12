@@ -22,6 +22,102 @@ namespace ProjectPortal.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ProjectPortal.Api.Models.ClientContact", b =>
+                {
+                    b.Property<int>("ClientContactId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClientContactId"));
+
+                    b.Property<string>("ContactEmail")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ContactName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("ContactType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClientContactId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("ClientContacts");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.Customer", b =>
+                {
+                    b.Property<int>("CustomerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CustomerId"));
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("CustomerId");
+
+                    b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.Employee", b =>
+                {
+                    b.Property<int>("EmployeeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EmployeeId"));
+
+                    b.Property<string>("EmployeeName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("EmployeeId");
+
+                    b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.PhaseEffort", b =>
+                {
+                    b.Property<int>("PhaseEffortId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PhaseEffortId"));
+
+                    b.Property<decimal>("EstimatedHours")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("PhaseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReleaseName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("PhaseEffortId");
+
+                    b.HasIndex("PhaseId");
+
+                    b.ToTable("PhaseEfforts");
+                });
+
             modelBuilder.Entity("ProjectPortal.Api.Models.Project", b =>
                 {
                     b.Property<int>("Id")
@@ -31,23 +127,25 @@ namespace ProjectPortal.Api.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal?>("ActualHours")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Customer")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("EstimatedHours")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("IssueDate")
@@ -55,15 +153,14 @@ namespace ProjectPortal.Api.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("OffshoreManager")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("OffshoreManagerId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("OnshoreManager")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("OnshoreManagerId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("RenewalDate")
                         .HasColumnType("datetime2");
@@ -74,13 +171,375 @@ namespace ProjectPortal.Api.Migrations
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("OffshoreManagerId");
+
+                    b.HasIndex("OnshoreManagerId");
+
+                    b.HasIndex("StatusId");
+
                     b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.ProjectStatus", b =>
+                {
+                    b.Property<int>("StatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StatusId"));
+
+                    b.Property<string>("StatusName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("StatusId");
+
+                    b.ToTable("ProjectStatuses");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.ProjectSubTask", b =>
+                {
+                    b.Property<int>("SubTaskId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubTaskId"));
+
+                    b.Property<string>("SubTaskName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SubTaskId");
+
+                    b.HasIndex("TaskId");
+
+                    b.ToTable("ProjectSubTasks");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.ProjectTask", b =>
+                {
+                    b.Property<int>("TaskId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskId"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("InitialPlanHours")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Phase")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("RevisedEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("RevisedPlanHours")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("RevisedStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SubTaskSummary")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TaskName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TaskType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WorkStream")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("TaskId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("ProjectTasks");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.ProjectWorkStream", b =>
+                {
+                    b.Property<int>("WorkStreamId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WorkStreamId"));
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WorkStreamName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("WorkStreamId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("ProjectWorkStreams");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.TaskEmployee", b =>
+                {
+                    b.Property<int>("TaskId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("TaskId", "EmployeeId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("TaskEmployees");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.WorkStreamPhase", b =>
+                {
+                    b.Property<int>("PhaseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PhaseId"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("OffshoreManagerId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OnshoreManagerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PhaseName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("WorkStreamId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PhaseId");
+
+                    b.HasIndex("OffshoreManagerId");
+
+                    b.HasIndex("OnshoreManagerId");
+
+                    b.HasIndex("WorkStreamId");
+
+                    b.ToTable("WorkStreamPhases");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.ClientContact", b =>
+                {
+                    b.HasOne("ProjectPortal.Api.Models.Customer", "Customer")
+                        .WithMany("Contacts")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.PhaseEffort", b =>
+                {
+                    b.HasOne("ProjectPortal.Api.Models.WorkStreamPhase", "Phase")
+                        .WithMany("Efforts")
+                        .HasForeignKey("PhaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Phase");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.Project", b =>
+                {
+                    b.HasOne("ProjectPortal.Api.Models.Customer", "CustomerDetails")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjectPortal.Api.Models.Employee", "OffshoreManagerDetails")
+                        .WithMany()
+                        .HasForeignKey("OffshoreManagerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjectPortal.Api.Models.Employee", "OnshoreManagerDetails")
+                        .WithMany()
+                        .HasForeignKey("OnshoreManagerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjectPortal.Api.Models.ProjectStatus", "StatusDetails")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CustomerDetails");
+
+                    b.Navigation("OffshoreManagerDetails");
+
+                    b.Navigation("OnshoreManagerDetails");
+
+                    b.Navigation("StatusDetails");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.ProjectSubTask", b =>
+                {
+                    b.HasOne("ProjectPortal.Api.Models.ProjectTask", "Task")
+                        .WithMany("SubTasks")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Task");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.ProjectTask", b =>
+                {
+                    b.HasOne("ProjectPortal.Api.Models.Project", "Project")
+                        .WithMany("Tasks")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.ProjectWorkStream", b =>
+                {
+                    b.HasOne("ProjectPortal.Api.Models.Project", "Project")
+                        .WithMany("WorkStreams")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.TaskEmployee", b =>
+                {
+                    b.HasOne("ProjectPortal.Api.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProjectPortal.Api.Models.ProjectTask", "Task")
+                        .WithMany("AssignedEmployees")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Task");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.WorkStreamPhase", b =>
+                {
+                    b.HasOne("ProjectPortal.Api.Models.Employee", "OffshoreManager")
+                        .WithMany()
+                        .HasForeignKey("OffshoreManagerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ProjectPortal.Api.Models.Employee", "OnshoreManager")
+                        .WithMany()
+                        .HasForeignKey("OnshoreManagerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ProjectPortal.Api.Models.ProjectWorkStream", "WorkStream")
+                        .WithMany("Phases")
+                        .HasForeignKey("WorkStreamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OffshoreManager");
+
+                    b.Navigation("OnshoreManager");
+
+                    b.Navigation("WorkStream");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.Customer", b =>
+                {
+                    b.Navigation("Contacts");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.Project", b =>
+                {
+                    b.Navigation("Tasks");
+
+                    b.Navigation("WorkStreams");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.ProjectTask", b =>
+                {
+                    b.Navigation("AssignedEmployees");
+
+                    b.Navigation("SubTasks");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.ProjectWorkStream", b =>
+                {
+                    b.Navigation("Phases");
+                });
+
+            modelBuilder.Entity("ProjectPortal.Api.Models.WorkStreamPhase", b =>
+                {
+                    b.Navigation("Efforts");
                 });
 #pragma warning restore 612, 618
         }

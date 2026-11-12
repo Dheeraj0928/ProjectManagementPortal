@@ -6,6 +6,7 @@
       Showing {{ firstItem }}&ndash;{{ lastItem }} of {{ totalCount }} {{ itemLabel }}
     }
   </p>
+  @if (showPageSize) {
   <label class="page-size-control">
     <span>Items per page</span>
     <select [ngModel]="pageSize" (ngModelChange)="changePageSize($event)" [disabled]="loading">
@@ -14,6 +15,7 @@
       }
     </select>
   </label>
+  }
   <nav class="page-controls" aria-label="Pagination">
     <button
       type="button"

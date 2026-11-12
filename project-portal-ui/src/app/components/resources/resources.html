@@ -1,0 +1,109 @@
+<section class="toolbar">
+  <h2>Resource Management</h2>
+  <div class="tools">
+    <button type="button" (click)="showFilters = !showFilters">{{ showFilters ? 'Hide Filters' : 'Show Filters' }}</button>
+    <div class="tabs">
+      <button type="button" [class.active]="active" (click)="active = true; page = 1">Active</button>
+      <button type="button" [class.active]="!active" (click)="active = false; page = 1">Inactive</button>
+    </div>
+    <button type="button" class="primary" (click)="startAdd()">+ Add Resource</button>
+    <button type="button" class="primary" (click)="exportCsv()">Export CSV</button>
+  </div>
+</section>
+<p class="note">Sample resources. New resources are saved in this browser.</p>
+
+@if (showFilters) {
+  <section class="filters">
+    <input type="search" placeholder="Search by employee name or email" [(ngModel)]="search" (ngModelChange)="page = 1" />
+    <select aria-label="Keka Manager" [(ngModel)]="manager" (ngModelChange)="page = 1">
+      <option value="">Keka Manager</option>
+      @for (name of options('kekaManager'); track name) { <option>{{ name }}</option> }
+    </select>
+    <select aria-label="AD Manager" [(ngModel)]="adManager" (ngModelChange)="page = 1">
+      <option value="">AD Manager</option>
+      @for (name of options('adManager'); track name) { <option>{{ name }}</option> }
+    </select>
+    <select aria-label="Country" [(ngModel)]="country" (ngModelChange)="page = 1">
+      <option value="">Country</option>
+      @for (name of options('country'); track name) { <option>{{ name }}</option> }
+    </select>
+    <select aria-label="Resource Group" [(ngModel)]="group" (ngModelChange)="page = 1">
+      <option value="">Resource Group</option>
+      @for (name of options('group'); track name) { <option>{{ name }}</option> }
+    </select>
+    <details class="columns">
+      <summary>Columns ▾</summary>
+      <div class="column-menu">
+        @for (column of columns; track column.key) {
+          <label><input type="checkbox" [(ngModel)]="column.visible" [disabled]="column.visible && visibleColumns.length === 1" />{{ column.label }}</label>
+        }
+      </div>
+    </details>
+    <button type="button" (click)="clearFilters()">Clear Filters</button>
+  </section>
+}
+
+<div class="table-box">
+  <table [style.min-width.px]="visibleColumns.length * 150">
+    <thead><tr>
+      @for (column of visibleColumns; track column.key) { <th>{{ column.label }}</th> }
+    </tr></thead>
+    <tbody>
+      @for (row of rows; track row.id) {
+        <tr>
+          @for (column of visibleColumns; track column.key) {
+            <td>
+              @if (column.key === 'id') {
+                <button type="button" class="link" (click)="selectedResource = row">{{ row.id }}</button>
+              } @else if (column.key === 'skills') {
+                <button type="button" class="link" (click)="selectedResource = row">View</button>
+              } @else { {{ row[column.key] === '' ? '—' : row[column.key] }} }
+            </td>
+          }
+        </tr>
+      } @empty { <tr><td [attr.colspan]="visibleColumns.length" class="empty">No matching resources found.</td></tr> }
+    </tbody>
+  </table>
+</div>
+<app-pagination [currentPage]="page" [pageSize]="pageSize" [totalCount]="filtered.length" [itemCount]="rows.length" [showPageSize]="false" itemLabel="resources" (pageChange)="page = $event"></app-pagination>
+
+@if (showForm) {
+  <div class="overlay" (click)="showForm = false">
+    <section class="dialog" role="dialog" aria-modal="true" aria-label="Add Resource" (click)="$event.stopPropagation()">
+      <h2>Add Resource</h2>
+      @if (error) { <p class="error" role="alert">{{ error }}</p> }
+      <form (ngSubmit)="save()">
+        <div class="fields">
+          <label>Employee ID *<input name="id" [(ngModel)]="draft.id" required /></label>
+          <label>Employee Name *<input name="name" [(ngModel)]="draft.name" required /></label>
+          <label>Email *<input name="email" type="email" [(ngModel)]="draft.email" required /></label>
+          <label>Date of Joining<input name="joined" type="date" [(ngModel)]="draft.joined" /></label>
+          <label>Role<input name="role" [(ngModel)]="draft.role" /></label>
+          <label>Department<input name="department" [(ngModel)]="draft.department" /></label>
+          <label>Current Projects<input name="projects" [(ngModel)]="draft.projects" /></label>
+          <label>Skills<input name="skills" [(ngModel)]="draft.skills" /></label>
+          <label>Experience (Years)<input name="experience" type="number" min="0" step="0.1" [(ngModel)]="draft.experience" /></label>
+          <label>Keka Manager<input name="manager" [(ngModel)]="draft.kekaManager" /></label>
+          <label>AD Manager<input name="adManager" [(ngModel)]="draft.adManager" /></label>
+          <label>Country<input name="country" [(ngModel)]="draft.country" /></label>
+          <label>Resource Group<input name="group" [(ngModel)]="draft.group" /></label>
+        </div>
+        <div class="form-btns"><button type="submit" class="primary">Save Resource</button><button type="button" (click)="showForm = false">Cancel</button></div>
+      </form>
+    </section>
+  </div>
+}
+
+@if (selectedResource; as resource) {
+  <div class="overlay" (click)="selectedResource = null">
+    <section class="dialog" role="dialog" aria-modal="true" aria-label="Resource Details" (click)="$event.stopPropagation()">
+      <h2>{{ resource.name }}</h2>
+      <dl>
+        @for (column of columns; track column.key) {
+          <dt>{{ column.label }}</dt><dd>{{ resource[column.key] === '' ? '—' : resource[column.key] }}</dd>
+        }
+      </dl>
+      <button type="button" (click)="selectedResource = null">Close</button>
+    </section>
+  </div>
+}

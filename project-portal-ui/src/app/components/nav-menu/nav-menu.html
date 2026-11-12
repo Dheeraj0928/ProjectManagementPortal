@@ -1,0 +1,25 @@
+<button type="button" class="nav-btn" [attr.aria-expanded]="open" (click)="toggle($event)">
+  <ng-content></ng-content>
+  <span>{{ label }}</span>
+  <svg lucideChevronDown class="arrow" [class.up]="open"></svg>
+</button>
+
+@if (open) {
+  <div class="menu" (click)="$event.stopPropagation()">
+    @for (item of items; track item.label) {
+      <div class="menu-row">
+        <button type="button" (click)="choose(item, $event)">
+          {{ item.label }}
+          @if (item.children) { <span class="next">›</span> }
+        </button>
+        @if (item.children && submenu === item.label) {
+          <div class="submenu">
+            @for (child of item.children; track child.label) {
+              <button type="button" (click)="choose(child, $event)">{{ child.label }}</button>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

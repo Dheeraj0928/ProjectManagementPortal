@@ -1,345 +1,364 @@
 <div class="portal">
   <header class="navbar">
     <div class="logo">
-      <img src="/svm-logo.png" alt="SVAM International" class="company-logo" />
+      <img src="/svm-logo.png" alt="SVAM International" class="logo-img" />
     </div>
 
-    <nav class="main-nav">
+    <nav class="nav">
       <a href="#" class="nav-link">
         <span>Home</span>
       </a>
 
-      <a href="#projects" class="nav-link selected">
-        <svg lucideFolderKanban class="nav-icon" aria-hidden="true" focusable="false"></svg>
+      <a href="#projects" class="nav-link" [class.selected]="!selectedPage" (click)="openPage('')">
+        <svg lucideFolderKanban class="nav-icon"></svg>
         <span>Projects</span>
-        <svg lucideChevronDown class="chevron" aria-hidden="true" focusable="false"></svg>
+        <svg lucideChevronDown class="chevron"></svg>
       </a>
 
-      <a href="#" class="nav-link">
-        <svg lucideUsers class="nav-icon" aria-hidden="true" focusable="false"></svg>
-        <span>Allocation</span>
-        <svg lucideChevronDown class="chevron" aria-hidden="true" focusable="false"></svg>
-      </a>
+      <app-nav-menu label="Allocation" [items]="allocationMenu" (selected)="openPage($event)">
+        <svg lucideUsers class="nav-icon"></svg>
+      </app-nav-menu>
 
-      <a href="#" class="nav-link">
-        <svg lucideChartNoAxesCombined class="nav-icon" aria-hidden="true" focusable="false"></svg>
-        <span>Reports</span>
-        <svg lucideChevronDown class="chevron" aria-hidden="true" focusable="false"></svg>
-      </a>
+      <app-nav-menu label="Reports" [items]="reportMenu" (selected)="openPage($event)">
+        <svg lucideChartNoAxesCombined class="nav-icon"></svg>
+      </app-nav-menu>
 
-      <a href="#" class="nav-link">
-        <svg lucideContactRound class="nav-icon" aria-hidden="true" focusable="false"></svg>
+      <a href="#resources" class="nav-link" [class.selected]="selectedPage === 'Resource Management'" (click)="openPage('Resource Management')">
+        <svg lucideContactRound class="nav-icon"></svg>
         <span>Resource Management</span>
       </a>
 
-      <a href="#" class="nav-link">
-        <svg lucideShieldCheck class="nav-icon" aria-hidden="true" focusable="false"></svg>
-        <span>Admin</span>
-        <svg lucideChevronDown class="chevron" aria-hidden="true" focusable="false"></svg>
-      </a>
+      <app-nav-menu label="Admin" [items]="adminMenu" (selected)="openPage($event)">
+        <svg lucideShieldCheck class="nav-icon"></svg>
+      </app-nav-menu>
 
-      <a href="#" class="nav-link">
-        <svg lucideCalendarClock class="nav-icon" aria-hidden="true" focusable="false"></svg>
-        <span>Weekly Timesheet</span>
-        <svg lucideChevronDown class="chevron" aria-hidden="true" focusable="false"></svg>
-      </a>
+      <app-nav-menu label="Weekly Timesheet" [items]="timesheetMenu" (selected)="openPage($event)">
+        <svg lucideCalendarClock class="nav-icon"></svg>
+      </app-nav-menu>
     </nav>
 
-    <button class="profile" aria-label="User profile">
-      MV <svg lucideChevronDown class="profile-chevron" aria-hidden="true" focusable="false"></svg>
-    </button>
+    <app-profile (signOut)="openPage('Sign Out')"></app-profile>
   </header>
 
-  <main class="content" id="projects">
-    <div class="page-title">
-      <h2>
-        <svg lucideList class="title-icon" aria-hidden="true" focusable="false"></svg> List of
-        Projects
-      </h2>
+  @if (selectedProject; as project) {
+    <main class="content">
+      <app-project-details [project]="project" (closed)="selectedProject = null" (edit)="startEdit(project)"></app-project-details>
+    </main>
+  } @else if (selectedPage === 'Resource Management') {
+    <main class="content" id="resources">
+      <app-resources></app-resources>
+    </main>
+  } @else if (selectedPage) {
+    <main class="content">
+      <section class="page-panel">
+        <button type="button" class="filter-btn" (click)="selectedPage = ''">Back to Projects</button>
+        <h2>{{ selectedPage }}</h2>
+        @if (selectedPage === 'Sign Out') {
+          <p>Sign out will be available when login is connected. No account session has been ended.</p>
+        } @else {
+          <p>This section is coming soon.</p>
+        }
+      </section>
+    </main>
+    } @else {
+    <main class="content" id="projects">
+    <div class="heading">
+      <h2><svg lucideList class="title-icon"></svg> List of Projects</h2>
     </div>
 
     <!-- Success Toast -->
     @if (successMessage) {
-      <div class="toast-success" role="status">
-        <svg lucideCircleCheck class="ui-icon" aria-hidden="true" focusable="false"></svg>
-        {{ successMessage }}
-      </div>
+    <div class="success" role="status">
+      <svg lucideCircleCheck class="icon"></svg>
+      {{ successMessage }}
+    </div>
     }
 
     <!-- Error Message -->
     @if (errorMessage) {
-      <div class="toast-error" role="alert">
-        <span class="message-content"
-          ><svg lucideCircleAlert class="ui-icon" aria-hidden="true" focusable="false"></svg>
-          {{ errorMessage }}</span
-        >
-        <button class="toast-close" aria-label="Dismiss error" (click)="errorMessage = ''">
-          <svg lucideX class="ui-icon" aria-hidden="true" focusable="false"></svg>
-        </button>
-      </div>
+    <div class="error" role="alert">
+      <span class="message"><svg lucideCircleAlert class="icon"></svg> {{ errorMessage }}</span>
+      <button class="dismiss" aria-label="Dismiss error" (click)="errorMessage = ''"><svg lucideX
+          class="icon"></svg></button>
+    </div>
     }
 
     <!-- Loading Spinner -->
     <div class="loading-slot">
       @if (loading) {
-        <div class="loading-bar">
-          <div class="loading-bar-inner"></div>
-        </div>
+      <div class="loader">
+        <div class="loader-fill"></div>
+      </div>
       }
+
     </div>
 
-    <section class="status-toolbar">
-      <div class="status-tabs">
-        <button
-          class="status-tab"
-          [class.active]="filterStatus === 'All'"
-          (click)="selectStatus('All')"
-        >
+    <section class="toolbar">
+      <div class="tabs">
+        <button class="tab" [class.active]="filterStatus === 'All'" (click)="selectStatus('All')">
           <b>{{ getStatusCount('All') }}</b> All
         </button>
 
-        <button
-          class="status-tab"
-          [class.active]="filterStatus === 'In Progress'"
-          (click)="selectStatus('In Progress')"
-        >
+        <button class="tab" [class.active]="filterStatus === 'In Progress'" (click)="selectStatus('In Progress')">
           <b>{{ getStatusCount('In Progress') }}</b> In Progress
         </button>
 
-        <button
-          class="status-tab"
-          [class.active]="filterStatus === 'Completed'"
-          (click)="selectStatus('Completed')"
-        >
+        <button class="tab" [class.active]="filterStatus === 'Completed'" (click)="selectStatus('Completed')">
           <b>{{ getStatusCount('Completed') }}</b> Completed
         </button>
 
-        <button
-          class="status-tab"
-          [class.active]="filterStatus === 'Draft'"
-          (click)="selectStatus('Draft')"
-        >
+        <button class="tab" [class.active]="filterStatus === 'Draft'" (click)="selectStatus('Draft')">
           <b>{{ getStatusCount('Draft') }}</b> Draft
         </button>
 
-        <button
-          class="status-tab"
-          [class.active]="filterStatus === 'Active'"
-          (click)="selectStatus('Active')"
-        >
+        <button class="tab" [class.active]="filterStatus === 'Active'" (click)="selectStatus('Active')">
           <b>{{ getStatusCount('Active') }}</b> Active
         </button>
       </div>
 
-      <div class="toolbar-actions">
-        <button class="text-button" (click)="showFilters = !showFilters">
-          <svg lucideSlidersHorizontal class="ui-icon" aria-hidden="true" focusable="false"></svg>
-          {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+      <div class="tools">
+        <button class="filter-btn" (click)="showFilters = !showFilters">
+          <svg lucideSlidersHorizontal class="icon"></svg> {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
         </button>
 
-        <button class="create-button" (click)="toggleCreateForm()" [disabled]="savingProject">
-          <svg lucidePlus class="ui-icon" aria-hidden="true" focusable="false"></svg> Create Project
+        <button class="create-btn" (click)="showCreateForm = !showCreateForm">
+          <svg lucidePlus class="icon"></svg> Create Project
         </button>
       </div>
     </section>
 
     <!-- Create Project Form -->
     @if (showCreateForm) {
-      <section class="create-form animate-slide-down" aria-labelledby="create-project-title">
-        <div class="form-header">
-          <h3 id="create-project-title">
-            <svg lucideFolderKanban class="ui-icon" aria-hidden="true" focusable="false"></svg>
-            Create New Project
-          </h3>
-          <button
-            type="button"
-            class="close-form-btn"
-            aria-label="Close create form"
-            [disabled]="savingProject"
-            (click)="closeCreateForm()"
-          >
-            <svg lucideX class="ui-icon" aria-hidden="true" focusable="false"></svg>
-          </button>
-        </div>
-        <app-project-form
-          [saving]="savingProject"
-          [saveError]="createError"
-          (submitted)="addProject($event)"
-          (cancelled)="closeCreateForm()"
-        ></app-project-form>
-      </section>
+    <section class="project-form slide">
+      <div class="form-head">
+        <h3><svg lucideFolderKanban class="icon"></svg> Create New Project</h3>
+        <button class="close-btn" aria-label="Close form" (click)="showCreateForm = false"><svg lucideX
+            class="icon"></svg></button>
+      </div>
+      <app-project-form (submitted)="addProject($event)"></app-project-form>
+    </section>
     }
 
-    <!-- Edit uses the same form component as Create. -->
+    <!-- Edit Project Modal -->
     @if (editProject) {
-      <div class="modal-overlay" (click)="cancelEdit()">
-        <section
-          class="edit-modal animate-slide-down"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="edit-project-title"
-          (click)="$event.stopPropagation()"
-          (keydown.escape)="cancelEdit()"
-        >
-          <div class="form-header">
-            <h3 id="edit-project-title">
-              <svg lucidePencil class="ui-icon" aria-hidden="true" focusable="false"></svg> Edit
-              Project &mdash; {{ editProject.code }}
-            </h3>
-            <button
-              type="button"
-              class="close-form-btn"
-              aria-label="Close edit form"
-              [disabled]="savingProject"
-              (click)="cancelEdit()"
-            >
-              <svg lucideX class="ui-icon" aria-hidden="true" focusable="false"></svg>
-            </button>
+    <div class="overlay" (click)="cancelEdit()">
+      <section class="modal slide" (click)="$event.stopPropagation()">
+        <div class="form-head">
+          <h3><svg lucidePencil class="icon"></svg> Edit Project — {{ editProject.code }}</h3>
+          <button class="close-btn" aria-label="Close form" (click)="cancelEdit()"><svg lucideX
+              class="icon"></svg></button>
+        </div>
+
+        <div class="fields">
+          <div class="field">
+            <label>Project Code <span class="required">*</span></label>
+            <input [(ngModel)]="editProject.code" />
           </div>
-          <app-project-form
-            mode="edit"
-            [initialProject]="editProject"
-            [saving]="savingProject"
-            [saveError]="editError"
-            (submitted)="saveEdit($event)"
-            (cancelled)="cancelEdit()"
-          ></app-project-form>
-        </section>
-      </div>
+
+          <div class="field">
+            <label>Customer Name <span class="required">*</span></label>
+            <input [(ngModel)]="editProject.customer" />
+          </div>
+
+          <div class="field">
+            <label>Project Name <span class="required">*</span></label>
+            <input [(ngModel)]="editProject.name" />
+          </div>
+
+          <div class="field">
+            <label>Start Date</label>
+            <input type="date" [(ngModel)]="editProject.startDate" />
+          </div>
+
+          <div class="field">
+            <label>End Date</label>
+            <input type="date" [(ngModel)]="editProject.endDate" />
+          </div>
+
+          <div class="field">
+            <label>Revised End Date</label>
+            <input type="date" [(ngModel)]="editProject.revisedEndDate" />
+          </div>
+
+          <div class="field">
+            <label>Renewal Date</label>
+            <input type="date" [(ngModel)]="editProject.renewalDate" />
+          </div>
+
+          <div class="field">
+            <label>Issue Date</label>
+            <input type="date" [(ngModel)]="editProject.issueDate" />
+          </div>
+
+          <div class="field">
+            <label>Estimated Hours</label>
+            <input type="number" [(ngModel)]="editProject.estimatedHours" />
+          </div>
+
+          <div class="field">
+            <label>Actual Hours</label>
+            <input type="number" [(ngModel)]="editProject.actualHours" />
+          </div>
+
+          <div class="field">
+            <label>Onshore Manager</label>
+            <input [(ngModel)]="editProject.onshoreManager" />
+          </div>
+
+          <div class="field">
+            <label>Offshore Manager</label>
+            <input [(ngModel)]="editProject.offshoreManager" />
+          </div>
+
+          <div class="field">
+            <label>Status</label>
+            <select [(ngModel)]="editProject.status">
+              <option value="In Progress">In Progress</option>
+              <option value="Draft">Draft</option>
+              <option value="Completed">Completed</option>
+              <option value="Active">Active</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-btns">
+          <button class="save-btn" (click)="saveEdit()">
+            <svg lucideSave class="icon"></svg> Update Project
+          </button>
+          <button class="cancel-btn" (click)="cancelEdit()">
+            Cancel
+          </button>
+        </div>
+      </section>
+    </div>
     }
 
     <!-- Filter Panel -->
-    <section class="filter-panel">
-      <div class="search-field">
-        <svg lucideSearch class="search-icon" aria-hidden="true" focusable="false"></svg>
-        <input
-          class="search-box"
+    @if (showFilters) {
+    <section class="filters">
+      <div class="search">
+        <svg lucideSearch class="search-icon"></svg>
+        <input class="search-input"
           placeholder="Search by project, code, or customer"
-          aria-label="Search projects"
-          [ngModel]="searchText"
-          (ngModelChange)="searchText = $event; applyFilters()"
-        />
+          aria-label="Search projects" [(ngModel)]="searchText" (ngModelChange)="applyFilters()" />
       </div>
 
-      <select
-        [ngModel]="selectedColumn"
-        (ngModelChange)="selectedColumn = $event; applyFilters()"
-        aria-label="Select search column"
-      >
-        <option value="all">All Columns</option>
-        <option value="code">Project Code</option>
-        <option value="customer">Customer Name</option>
-        <option value="name">Project Name</option>
-      </select>
+      <details class="columns">
+        <summary>Columns <svg lucideChevronDown class="icon"></svg></summary>
+        <div class="column-menu">
+          <p>Select columns</p>
+          @for (column of columns; track column.key) {
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="column.visible"
+                [disabled]="column.visible && visibleColumnCount === 1"
+              />
+              {{ column.label }}
+            </label>
+          }
+        </div>
+      </details>
 
-      <button class="clear-button" (click)="clearFilters()">
-        <svg lucideRotateCcw class="ui-icon" aria-hidden="true" focusable="false"></svg> Clear
-        Filters
+      <button class="clear-btn" (click)="clearFilters()">
+        <svg lucideRotateCcw class="icon"></svg> Clear Filters
       </button>
     </section>
+    }
 
     <!-- Data Table -->
-    <div class="table-wrap">
-      <table>
+    <div class="table-box">
+      <table [style.min-width.px]="visibleColumnCount * 130">
         <thead>
           <tr>
-            <th>Project Code</th>
-            <th>Customer Name</th>
-            <th>Project Name</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Revised End Date</th>
-            <th>Renewal Date</th>
-            <th>Issue Date</th>
-            <th>Estimated Hours</th>
-            <th>Actual Hours</th>
-            <th>Onshore Manager</th>
-            <th>Offshore Manager</th>
-            <th>Status</th>
-            <th>Actions</th>
+            @for (column of columns; track column.key) {
+              @if (column.visible) {
+                <th>{{ column.label }}</th>
+              }
+            }
           </tr>
         </thead>
 
         <tbody>
           @for (project of projects; track project.id) {
-            <tr>
-              <td>
-                <a href="#projects" class="code-link">{{ project.code }}</a>
-              </td>
-              <td>{{ project.customer }}</td>
-              <td>
-                <a href="#projects" class="name-link">{{ project.name }}</a>
-              </td>
-              <td>{{ project.startDate || '—' }}</td>
-              <td>{{ project.endDate || '—' }}</td>
-              <td>{{ project.revisedEndDate || '—' }}</td>
-              <td>{{ project.renewalDate || '—' }}</td>
-              <td>{{ project.issueDate || '—' }}</td>
-              <td class="number-cell">{{ project.estimatedHours }}</td>
-              <td class="number-cell">{{ project.actualHours ?? '—' }}</td>
-              <td>{{ project.onshoreManager || '—' }}</td>
-              <td>{{ project.offshoreManager || '—' }}</td>
-              <td>
-                <span
-                  class="status-badge"
-                  [class.status-progress]="project.status === 'In Progress'"
-                  [class.status-completed]="project.status === 'Completed'"
-                  [class.status-draft]="project.status === 'Draft'"
-                  [class.status-active]="project.status === 'Active'"
-                >
-                  {{ project.status }}
-                </span>
-              </td>
-              <td class="action-cell">
-                <button
-                  type="button"
-                  class="action-btn edit-btn"
-                  title="Edit"
-                  aria-label="Edit project"
-                  (click)="startEdit(project)"
-                >
-                  <svg lucidePencil class="action-icon" aria-hidden="true" focusable="false"></svg>
-                </button>
-                <button
-                  type="button"
-                  class="action-btn delete-btn"
-                  title="Delete"
-                  aria-label="Delete project"
-                  (click)="deleteProject(project)"
-                >
-                  <svg lucideTrash2 class="action-icon" aria-hidden="true" focusable="false"></svg>
-                </button>
-              </td>
-            </tr>
+          <tr>
+            @if (isColumnVisible('code')) {
+            <td><button type="button" class="table-link code" (click)="openProject(project)">{{ project.code }}</button></td>
+            }
+            @if (isColumnVisible('customer')) {
+            <td>{{ project.customer }}</td>
+            }
+            @if (isColumnVisible('name')) {
+            <td><button type="button" class="table-link name" (click)="openProject(project)">{{ project.name }}</button></td>
+            }
+            @if (isColumnVisible('startDate')) {
+            <td>{{ project.startDate || '—' }}</td>
+            }
+            @if (isColumnVisible('endDate')) {
+            <td>{{ project.endDate || '—' }}</td>
+            }
+            @if (isColumnVisible('revisedEndDate')) {
+            <td>{{ project.revisedEndDate || '—' }}</td>
+            }
+            @if (isColumnVisible('renewalDate')) {
+            <td>{{ project.renewalDate || '—' }}</td>
+            }
+            @if (isColumnVisible('issueDate')) {
+            <td>{{ project.issueDate || '—' }}</td>
+            }
+            @if (isColumnVisible('estimatedHours')) {
+            <td class="num">{{ project.estimatedHours }}</td>
+            }
+            @if (isColumnVisible('actualHours')) {
+            <td class="num">{{ project.actualHours ?? '—' }}</td>
+            }
+            @if (isColumnVisible('onshoreManager')) {
+            <td>{{ project.onshoreManager || '—' }}</td>
+            }
+            @if (isColumnVisible('offshoreManager')) {
+            <td>{{ project.offshoreManager || '—' }}</td>
+            }
+            @if (isColumnVisible('status')) {
+            <td>
+              <span class="badge" [class.progress]="project.status === 'In Progress'"
+                [class.completed]="project.status === 'Completed'" [class.draft]="project.status === 'Draft'"
+                [class.running]="project.status === 'Active'">
+                {{ project.status }}
+              </span>
+            </td>
+            }
+            @if (isColumnVisible('actions')) {
+            <td class="actions">
+              <button type="button" class="row-btn edit-btn" title="Edit" aria-label="Edit project"
+                (click)="startEdit(project)">
+                <svg lucidePencil class="row-icon"></svg>
+              </button>
+              <button type="button" class="row-btn delete-btn" title="Delete" aria-label="Delete project"
+                (click)="deleteProject(project)">
+                <svg lucideTrash2 class="row-icon"></svg>
+              </button>
+            </td>
+            }
+          </tr>
           } @empty {
-            <tr>
-              <td colspan="14" class="empty-row">
-                @if (loading) {
-                  Loading projects...
-                } @else if (errorMessage) {
-                  Projects could not be loaded. Please try again.
-                } @else {
-                  No matching projects found.
-                }
-              </td>
-            </tr>
+          <tr>
+            <td [attr.colspan]="visibleColumnCount" class="empty">
+              @if (loading) {
+              Loading projects...
+              } @else {
+              No matching projects found.
+              }
+            </td>
+          </tr>
           }
         </tbody>
       </table>
     </div>
 
-    <app-pagination
-      [currentPage]="currentPage"
-      [pageSize]="pageSize"
-      [totalCount]="totalCount"
-      [itemCount]="projects.length"
-      [loading]="loading"
-      itemLabel="projects"
-      (pageChange)="changePage($event)"
-      (pageSizeChange)="changePageSize($event)"
-    ></app-pagination>
-    @if (errorMessage && !loading) {
-      <button type="button" class="text-button" (click)="loadProjects()">Retry</button>
-    }
+
+    <app-pagination [currentPage]="currentPage" [pageSize]="pageSize" [totalCount]="totalCount"
+      [itemCount]="projects.length" [loading]="loading" [showPageSize]="false" itemLabel="projects"
+      (pageChange)="changePage($event)"></app-pagination>
   </main>
+    }
 </div>
